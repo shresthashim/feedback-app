@@ -1,72 +1,55 @@
 import dbConnect from "@/lib/db";
 import User from "@/model/users.model";
 import { NextResponse } from "next/server";
+import { verifySchema } from "@/schemas/verify.schema";
 
 export async function POST(req: Request) {
   await dbConnect();
 
   try {
-    const { username, code } = await req.json();
+    const requestData = await req.json();
 
+    const res = verifySchema.safeParse(requestData);
+
+    if (!res.success) {
+      const codeError = res.error.format().code?._errors || [];
+      return NextResponse.json(
+        {
+          success: false,
+          message: codeError.length > 0 ? codeError.join(", ") : "Invalid verification code",
+        },
+        { status: 400 }
+      );
+    }
+
+    const { username, code } = res.data;
     const decodedUsername = decodeURIComponent(username);
-
     const user = await User.findOne({ username: decodedUsername });
 
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User not found",
-        },
-        {
-          status: 404,
-        }
-      );
+      return createResponse(false, "User not found", 404);
     }
 
     const isCodeValid = user.verifyCode === code;
-
     const isCodeNotExpired = new Date(user.verifyCodeExpires) > new Date();
-    if (isCodeNotExpired && isCodeValid) {
-      user.isVerified = true;
-      await user.save();
 
-      return NextResponse.json(
-        {
-          success: true,
-          message: "User verified successfully",
-        },
-        {
-          status: 200,
-        }
-      );
-    } else if (!isCodeNotExpired) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Verification code expired",
-        },
-        {
-          status: 400,
-        }
-      );
-    } else if (!isCodeValid) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid verification code",
-        },
-        {
-          status: 400,
-        }
-      );
+    if (!isCodeNotExpired) {
+      return createResponse(false, "Verification code expired", 400);
     }
+
+    if (!isCodeValid) {
+      return createResponse(false, "Invalid verification code", 400);
+    }
+
+    user.isVerified = true;
+    await user.save();
+    return createResponse(true, "User verified successfully", 200);
   } catch (error) {
-    return {
-      status: 500,
-      body: {
-        message: "Error verifying code",
-      },
-    };
+    console.error("Verification error:", error);
+    return createResponse(false, "Error verifying code", 500);
   }
+}
+
+function createResponse(success: boolean, message: string, status: number) {
+  return NextResponse.json({ success, message }, { status });
 }

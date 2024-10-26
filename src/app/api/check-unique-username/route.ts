@@ -23,8 +23,6 @@ export async function GET(req: Request) {
 
     const res = usernameQuerySchema.safeParse(queryParam);
 
-    console.log(res);
-
     if (!res.success) {
       const usernameerror = res.error.format().username?._errors || [];
       return NextResponse.json(
