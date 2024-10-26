@@ -1,12 +1,7 @@
 import dbConnect from "@/lib/db";
 import User from "@/model/users.model";
-import { z } from "zod";
 import { NextResponse } from "next/server";
 import { verifySchema } from "@/schemas/verify.schema";
-
-const verifyCodeSchema = z.object({
-  code: verifySchema,
-});
 
 export async function POST(req: Request) {
   await dbConnect();
@@ -14,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const { username, code } = await req.json();
 
-    const res = verifyCodeSchema.safeParse({ code });
+    const res = verifySchema.safeParse({ username, code });
 
     if (!res.success) {
       const codeError = res.error.format().code?._errors || [];
