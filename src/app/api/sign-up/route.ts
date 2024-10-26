@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Send verification email
-    const emailRes = await sendVerificationEmail(username, email, verifyCode);
+    const emailRes = await sendVerificationEmail(email, username, verifyCode);
     if (!emailRes.success) {
       return NextResponse.json({ success: false, message: "Error sending verification email" }, { status: 500 });
     }
