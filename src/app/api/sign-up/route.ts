@@ -17,6 +17,10 @@ function generateVerifyCode(): { code: string; expires: Date } {
 }
 
 export async function POST(req: NextRequest) {
+  if (req.method !== "POST") {
+    return NextResponse.json({ success: false, message: "Only POST requests are allowed" }, { status: 405 });
+  }
+
   await dbConnect();
 
   try {

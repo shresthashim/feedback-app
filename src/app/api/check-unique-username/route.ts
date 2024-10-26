@@ -9,6 +9,10 @@ const usernameQuerySchema = z.object({
 });
 
 export async function GET(req: Request) {
+  if (req.method !== "GET") {
+    return NextResponse.json({ success: false, message: "Only GET requests are allowed" }, { status: 405 });
+  }
+
   await dbConnect();
 
   try {
