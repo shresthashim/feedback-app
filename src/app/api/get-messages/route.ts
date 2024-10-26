@@ -72,5 +72,15 @@ export async function GET(req: Request) {
         status: 200,
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to get messages",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

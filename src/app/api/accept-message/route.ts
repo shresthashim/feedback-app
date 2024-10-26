@@ -4,6 +4,7 @@ import UserModel from "@/model/users.model";
 import dbConnect from "@/lib/db";
 import { User } from "next-auth";
 import { NextResponse } from "next/server";
+import { acceptMessagesSchema } from "@/schemas/accept-messages.schema";
 
 export async function POST(req: Request) {
   await dbConnect();
@@ -24,10 +25,23 @@ export async function POST(req: Request) {
   }
 
   const userId = user._id;
-
   const { acceptMessages } = await req.json();
 
+  const res = acceptMessagesSchema.safeParse({ acceptMessages });
+
+  if (!res.success) {
+    const errors = res.error.format().acceptMessages?._errors || [];
+    return NextResponse.json(
+      {
+        success: false,
+        message: errors.length > 0 ? errors.join(", ") : "Invalid input",
+      },
+      { status: 400 }
+    );
+  }
+
   try {
+    const { acceptMessages } = res.data;
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
       {
