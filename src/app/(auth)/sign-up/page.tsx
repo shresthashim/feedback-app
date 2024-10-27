@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useDebounceValue } from "usehooks-ts";
+import { useDebounceCallback } from "usehooks-ts";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
@@ -22,7 +22,7 @@ const SignInPage = () => {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
 
-  const debouncedUsername = useDebounceValue(username, 500);
+  const debounced = useDebounceCallback(setUsername, 500);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -37,11 +37,11 @@ const SignInPage = () => {
 
   useEffect(() => {
     const checkUsernameUnique = async () => {
-      if (debouncedUsername) {
+      if (username) {
         setIsCheckingUsername(true);
         setUsernameMsg("");
         try {
-          const res = await axios.get(`/api/check-unique-username?username=${debouncedUsername}`);
+          const res = await axios.get(`/api/check-unique-username?username=${username}`);
           setUsernameMsg(res.data.message);
         } catch (error) {
           const axiosError = error as AxiosError<ApiResponse>;
@@ -52,7 +52,7 @@ const SignInPage = () => {
       }
     };
     checkUsernameUnique();
-  }, [debouncedUsername]);
+  }, [username]);
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     setIsFormSubmitting(true);
@@ -64,7 +64,6 @@ const SignInPage = () => {
         variant: "default",
       });
       router.replace(`/verify/${username}`);
-      router.push("/sign-in");
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast({
@@ -81,8 +80,8 @@ const SignInPage = () => {
     <div className='flex justify-center items-center min-h-screen bg-gray-800'>
       <div className='w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md'>
         <div className='text-center'>
-          <h1 className='text-4xl font-extrabold tracking-tight lg:text-5xl mb-6'>Welcome Back to True Feedback</h1>
-          <p className='mb-4'>Sign in to continue your secret conversations</p>
+          <h1 className='text-4xl font-extrabold tracking-tight lg:text-5xl mb-6'>Join True Feedback</h1>
+          <p className='mb-4'>Sign up to start your anonymous adventure</p>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
@@ -98,10 +97,21 @@ const SignInPage = () => {
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
-                        setUsername(e.target.value);
+                        debounced(e.target.value);
                       }}
                     />
                   </FormControl>
+
+                  <FormDescription
+                    className={`${
+                      usernameMsg.includes("Username already taken") ||
+                      usernameMsg.includes("Username must be at least 3 characters long")
+                        ? "text-red-600"
+                        : "text-green-600"
+                    }`}
+                  >
+                    {username.length > 0 && (isCheckingUsername ? <Loader2 className='animate-spin mr-2' /> : usernameMsg)}
+                  </FormDescription>
 
                   <FormMessage />
                 </FormItem>
@@ -142,9 +152,9 @@ const SignInPage = () => {
         </Form>
         <div className='text-center mt-4'>
           <p>
-            Not a member yet?{" "}
-            <Link href='/sign-up' className='text-blue-600 hover:text-blue-800'>
-              Sign up
+            Already a member?{" "}
+            <Link href='/sign-in' className='text-blue-600 hover:text-blue-800'>
+              Sign In
             </Link>
           </p>
         </div>

@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     if (existingVerifiedUser) {
       return NextResponse.json({ success: false, message: "Username already taken!" }, { status: 400 });
     } else {
-      return NextResponse.json({ success: true, message: "Username is available" });
+      return NextResponse.json({ success: true, message: "Username is available." });
     }
   } catch (error) {
     console.error(error);
