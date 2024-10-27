@@ -79,7 +79,7 @@ const VerifyPage = () => {
                 </FormItem>
               )}
             />
-            <Button type='submit' disabled={loading} className='flex items-center justify-center'>
+            <Button type='submit' disabled={loading} className=' w-[50%]'>
               {loading ? <Loader2 className='animate-spin mr-2' /> : "Verify"}
             </Button>
           </form>

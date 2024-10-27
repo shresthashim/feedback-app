@@ -145,7 +145,7 @@ const SignInPage = () => {
                 </FormItem>
               )}
             />
-            <Button type='submit' disabled={isFormSubmitting}>
+            <Button className='w-full' type='submit' disabled={isFormSubmitting}>
               {isFormSubmitting ? <Loader2 className='w-6 mr-2 h-6 animate-spin' /> : "Sign Up"}
             </Button>
           </form>
