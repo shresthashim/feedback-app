@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   await dbConnect();
 
   const session = await getServerSession(authOptions);
-  const user: User = session?.user;
+  const sessionUser: User = session?.user;
 
   if (!session || !session.user) {
     return NextResponse.json(
@@ -23,17 +23,18 @@ export async function GET(req: Request) {
       }
     );
   }
-  const userId = new mongoose.Types.ObjectId(user._id);
+
+  const userId = new mongoose.Types.ObjectId(sessionUser._id);
+  
   try {
-    const user = await UserModel.aggregate([
+    const userMessages = await UserModel.aggregate([
       {
         $match: {
-          id: userId,
+          _id: userId,
         },
       },
-
       {
-        $unwind: `$messages`,
+        $unwind: "$messages",
       },
       {
         $sort: {
@@ -50,7 +51,7 @@ export async function GET(req: Request) {
       },
     ]);
 
-    if (!user) {
+    if (userMessages.length === 0) {
       return NextResponse.json(
         {
           success: false,
@@ -66,13 +67,14 @@ export async function GET(req: Request) {
       {
         success: true,
         message: "Messages found",
-        messages: user[0].messages,
+        messages: userMessages[0].messages,
       },
       {
         status: 200,
       }
     );
   } catch (error) {
+    console.error("Error fetching messages:", error);
     return NextResponse.json(
       {
         success: false,

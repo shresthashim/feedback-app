@@ -19,6 +19,7 @@ import { Button } from "./ui/button";
 import { ApiResponse } from "@/types/ApiResponse";
 import { useToast } from "@/hooks/use-toast";
 import { Message } from "@/model/users.model";
+import dayjs from "dayjs";
 
 type MessageCardProps = {
   message: Message;
@@ -70,7 +71,7 @@ const MessageCard = ({ message, onMessageDelete }: MessageCardProps) => {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        {/* <div className='text-sm'>{dayjs(message.createdAt).format("MMM D, YYYY h:mm A")}</div> */}
+        <div className='text-sm'>{dayjs(message.createdAt).format("MMM D, YYYY h:mm A")}</div>
       </CardHeader>
       <CardContent></CardContent>
     </Card>
