@@ -25,7 +25,7 @@ export async function GET(req: Request) {
   }
 
   const userId = new mongoose.Types.ObjectId(sessionUser._id);
-  
+
   try {
     const userMessages = await UserModel.aggregate([
       {
@@ -50,15 +50,15 @@ export async function GET(req: Request) {
         },
       },
     ]);
-
     if (userMessages.length === 0) {
       return NextResponse.json(
         {
-          success: false,
-          message: "No messages found",
+          success: true,
+          message: "No messages available",
+          messages: [],
         },
         {
-          status: 404,
+          status: 200,
         }
       );
     }
