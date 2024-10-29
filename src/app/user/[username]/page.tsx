@@ -24,12 +24,14 @@ const SendMessagePage = () => {
     resolver: zodResolver(messageSchema),
   });
 
-  const messageContent = form.watch("content");
+  const { setValue, watch } = form;
+  const messageContent = watch("content");
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   const onSubmit = async (data: z.infer<typeof messageSchema>) => {
-    setIsLoading(true);
+    setIsSending(true);
     try {
       const response = await axios.post<ApiResponse>("/api/send-message", {
         ...data,
@@ -49,7 +51,30 @@ const SendMessagePage = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
+    }
+  };
+
+  const fetchSuggestedMessages = async () => {
+    setIsFetching(true);
+    try {
+      const response = await axios.get<ApiResponse>("/api/suggest-messages");
+
+      toast({
+        title: response.data.message,
+        variant: "default",
+      });
+      const suggestedMessage = response.data.result ?? "";
+      setValue("content", suggestedMessage);
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      toast({
+        title: "Error",
+        description: axiosError.response?.data.message ?? "Failed to fetch suggested messages",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -72,13 +97,13 @@ const SendMessagePage = () => {
             )}
           />
           <div className='flex justify-center'>
-            {isLoading ? (
+            {isSending ? (
               <Button disabled>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                Please wait
+                Sending...
               </Button>
             ) : (
-              <Button type='submit' disabled={isLoading || !messageContent}>
+              <Button type='submit' disabled={isSending || !messageContent}>
                 Send Message
               </Button>
             )}
@@ -86,12 +111,25 @@ const SendMessagePage = () => {
         </form>
       </Form>
 
-      <Separator className='my-6' />
-      <div className='text-center'>
-        <div className='mb-4'>Get Your Message Board</div>
-        <Link href={"/sign-up"}>
-          <Button>Create Your Account</Button>
-        </Link>
+      <div>
+        <Button type='button' onClick={fetchSuggestedMessages} disabled={isFetching}>
+          {isFetching ? (
+            <>
+              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+              Suggesting...
+            </>
+          ) : (
+            "Suggest Message"
+          )}
+        </Button>
+
+        <Separator className='my-6' />
+        <div className='text-center'>
+          <div className='mb-4'>Get Your Message Board</div>
+          <Link href={"/sign-up"}>
+            <Button>Create Your Account</Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

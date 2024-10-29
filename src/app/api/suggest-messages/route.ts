@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-export async function POST() {
+export async function GET() {
   try {
-    const prompt = "what is computer in one sentence ?";
+    const prompt = "Create a random message for a anyone as a feedback. (one sentence)";
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) {
@@ -16,7 +16,7 @@ export async function POST() {
     return NextResponse.json(
       {
         success: true,
-        message: "Suggested questions generated successfully",
+        message: "Messages suggested successfully",
         result,
       },
       {
