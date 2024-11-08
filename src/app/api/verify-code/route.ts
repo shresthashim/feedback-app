@@ -78,11 +78,14 @@ export async function POST(req: Request) {
       );
     }
   } catch (error) {
-    return {
-      status: 500,
-      body: {
+    return NextResponse.json(
+      {
+        success: false,
         message: "Error verifying code",
       },
-    };
+      {
+        status: 500,
+      }
+    );
   }
 }
