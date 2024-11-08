@@ -5,15 +5,9 @@ import dbConnect from "@/lib/db";
 import { User } from "next-auth";
 import { NextResponse } from "next/server";
 
-export async function DELETE(
-  req: Request,
-  {
-    params,
-  }: {
-    params: { msgId: string };
-  }
-) {
-  const msgId = params.msgId;
+export async function DELETE(req: Request) {
+  const url = new URL(req.url);
+  const msgId = url.pathname.split("/").pop(); 
 
   await dbConnect();
 
